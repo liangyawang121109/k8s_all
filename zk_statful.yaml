@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zk
+  namespace: base-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: zookeeper
+  serviceName: zk
+  template:
+    metadata:
+      name: zookeeper-pod
+      labels:
+        app: zookeeper
+      namespace: base-env
+    spec:
+      containers:
+      - name: zookeeper-pod
+        image: harbor.sys..com/yunshuxie/service/zookeeper:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: zk-port
+          containerPort: 2181
+        volumeMounts:
+        - name: zk-pvc
+          mountPath: /tmp/zookeeper/
+      imagePullSecrets:
+      - name: registry-secret
+  volumeClaimTemplates:
+  - metadata: 
+      name: zk-pvc
+      namespace: base-env
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: "10Gi" 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk
+  namespace: base-env
+  labels:
+    app: zookeeper
+spec:
+  ports:
+  - name: client
+    port: 2181
+    protocol: TCP
+  - name: follower
+    port: 2888
+    protocol: TCP
+  - name: leader
+    port: 3888
+    protocol: TCP
+  selector:
+    app: zookeeper
