@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-deploy
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.label }}
+  template:
+    metadata:
+      name: {{ .Values.name }}
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ .Values.label }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: {{ .Values.name }} 
+          containerPort: {{ .Values.containerport }}
+          protocol: TCP
+        volumeMounts:
+        - name: exam-project-volume
+          mountPath: /home/work/tscpadmin.yunshuxie.com/course-admin/
+        - name: {{ .Values.logsvaluename }}
+          mountPath: /data/logs/
+      imagePullSecrets:
+      - name: registry-secret
+      volumes:
+      - name: exam-project-volume
+        hostPath:
+          path: {{ .Values.volumepath }}
+      - name: {{ .Values.logsvaluename }}
+        hostPath:
+          path: {{ .Values.logsvolumepath }}
+
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        - 10.111.250.201
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-svc
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ .Values.label }}
+  ports:
+  - name: {{ .Values.name }}-svc-port
+    port:  80
+    targetPort: {{ .Values.containerport }}

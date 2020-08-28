@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}-dep
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.label }}
+  template:
+    metadata:
+      name: {{ .Values.name }}
+      namespace: {{ .Values.namespace }}
+      labels:
+        app: {{ .Values.label }}
+    spec:
+      
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: {{ .Values.name }}
+          containerPort: {{ .Values.containerport }}
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            port: {{ .Values.containerport }}
+            path: /v1/health/check.htm
+          initialDelaySeconds: 60
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            port: {{ .Values.containerport }}
+            path: /v1/health/check.htm
+          initialDelaySeconds: 60
+          periodSeconds: 60
+        volumeMounts:
+        - name: {{ .Values.logsvaluename }}
+          mountPath: /data/logs/tomcat_logs    
+      imagePullSecrets:
+      - name: registry-secret
+      volumes:
+      - name: {{ .Values.logsvaluename }}
+        hostPath:
+          path: {{ .Values.logsvolumepath }}
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        - 10.111.250.201
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-svc
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: {{ .Values.label }}
+  ports:
+  - name: {{ .Values.name }}-svc-port
+    port:  80
+    targetPort: {{ .Values.containerport }}
