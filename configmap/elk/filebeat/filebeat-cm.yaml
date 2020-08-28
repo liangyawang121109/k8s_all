@@ -1,0 +1,32 @@
+apiVersion: v1
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: log
+      enabled: true
+      paths:
+        - /home/service/filebeat/test.log
+      tags: ["nginx_accesslog"]
+      document_type: nginxaccess
+    - type: log
+      enabled: true
+      paths:
+        - /data/nfsshare/logs/test-env/tscp-exam/tscpexam.yunshuxie.com/*
+      tags: ["test-env-tscp-exam"]
+      multiline.pattern: '^\d{4}-\d{2}-\d{2}' 
+      multiline.negate: true
+      multiline.match: after
+      document_type: tscp-exam
+    filebeat.config.modules:
+      path: ${path.config}/modules.d/*.yml
+      reload.enabled: false
+    setup.template.settings:
+      index.number_of_shards: 3
+    setup.kibana:
+    output.logstash:
+      hosts: ["logstash-svc.log-mon.svc.cluster.local:5044"]
+kind: ConfigMap
+metadata:
+  namespace: log-mon
+  creationTimestamp: null
+  name: filebeat-config

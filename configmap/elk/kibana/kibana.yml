@@ -1,0 +1,7 @@
+server.name: kibana
+server.host: "0"
+elasticsearch.hosts: [ "es.log-mon.svc.cluster.local:9200" ]
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+elasticsearch.requestTimeout: 300000
+#elasticsearch.username: "elastic"
+#elasticsearch.password: "121109"

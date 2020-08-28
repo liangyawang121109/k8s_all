@@ -1,0 +1,6 @@
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+http.port: 9200
+node.name: node-1
+xpack.security.enabled: true
+cluster.initial_master_nodes: ["node-1"]

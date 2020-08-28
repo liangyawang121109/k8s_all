@@ -1,0 +1,37 @@
+apiVersion: v1
+data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    #xpack.monitoring.elasticsearch.hosts: [ "http://es.log-mon.svc.cluster.local:9200" ]
+    #xpack.management.elasticsearch.username: elastic
+    #xpack.management.elasticsearch.password: 121109
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+        codec => json
+      }
+    }
+    output {
+      if "nginx_accesskig" in [tags] {
+        elasticsearch {
+        hosts => ["http://es.log-mon.svc.cluster.local:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+        user => "elastic"
+        password => "121109"
+        }
+      }
+      if "test-env-tscp-exam" in [tags] {
+        elasticsearch {
+        hosts => ["http://es.log-mon.svc.cluster.local:9200"]
+        index => "test-env-tscp-exam-%{+YYYY.MM.dd}"
+        user => "elastic"
+        password => "121109"
+        }
+      }
+    }
+kind: ConfigMap
+metadata:
+  namespace: log-mon
+  creationTimestamp: null
+  name: logstash-config

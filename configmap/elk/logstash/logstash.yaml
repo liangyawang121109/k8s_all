@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-deploy
+  namespace: log-mon
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      name: logstash
+      namespace: log-mon
+      labels:
+        app: logstash
+    spec:
+      
+      containers:
+      - name: logstash
+        image: harbor.sys.bandubanxie.com/yunshuxie/service/logstash:7.3.0
+        imagePullPolicy: IfNotPresent
+        command: ["logstash"]
+        args:
+        - -f
+        - /usr/share/logstash/config/logstash.conf
+        ports:
+        - name: beats-port
+          containerPort: 5044
+          protocol: TCP
+        volumeMounts:
+        - name: logstash-config
+          mountPath: /usr/share/logstash/config/logstash.yml
+          subPath: logstash.yml
+        - name: logstash-config
+          mountPath: /usr/share/logstash/config/logstash.conf
+          subPath: logstash.conf
+      imagePullSecrets:
+      - name: registry-secret
+      volumes:
+      - name: logstash-config
+        configMap:
+          name: logstash-config
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+        - 10.111.250.201
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash-svc
+  namespace: log-mon
+spec:
+  type: NodePort
+  selector:
+    app: logstash
+  ports:
+  - name: logstash-port
+    port:  5044
+    targetPort: 5044
+

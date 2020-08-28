@@ -1,0 +1,15 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /root/base-env/elk/filebeat/filebeat/test.log
+  tags: ["nginx_accesslog"]
+  document_type: nginxaccess
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+setup.template.settings:
+  index.number_of_shards: 3
+setup.kibana:
+output.logstash:
+  hosts: ["192.168.12.155:30830"]

@@ -1,0 +1,27 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: esdataclean
+spec:
+  schedule: "05 00 * * *"
+  jobTemplate:
+    metadata:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cronjobcontan
+            image: 
+            imagePullPolicy: IfNotPresent
+            volumeMounts:
+            - name: scriptsmount
+              mountPath: /data/scripts
+            command: ["/bin/bash"]
+            args: ["/data/scripts/esdatadelete.sh"]
+          volumes:
+          - name: scriptsmount
+            hostPath:
+              path: /data/nfsshare/scripts
+          imagePullSecrets:
+          - name: registry-secret
+          restartPolicy: Never
